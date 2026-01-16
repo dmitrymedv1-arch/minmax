@@ -928,14 +928,17 @@ def create_download_link(figures, prefix="figure"):
         for i, fig in enumerate(figures):
             try:
                 # Check if it's a plotly figure
-                if hasattr(fig, 'to_image'):
-                    # Save plotly figure as PNG
-                    img_bytes = fig.to_image(format="png", width=1200, height=800)
-                    zip_file.writestr(f"{prefix}_{i+1:02d}.png", img_bytes)
-                    
-                    # For plotly, also save as HTML for interactivity
-                    html_content = fig.to_html(include_plotlyjs='cdn')
-                    zip_file.writestr(f"{prefix}_{i+1:02d}.html", html_content)
+                if hasattr(fig, 'write_image'):
+                    # Try to save plotly figure as PNG
+                    try:
+                        import kaleido  # Import to ensure it's available
+                        img_bytes = fig.to_image(format="png", width=1200, height=800)
+                        zip_file.writestr(f"{prefix}_{i+1:02d}.png", img_bytes)
+                    except Exception as e:
+                        # If kaleido fails, save as HTML
+                        st.warning(f"Kaleido export failed: {e}. Saving plot as HTML instead.")
+                        html_content = fig.to_html(include_plotlyjs='cdn')
+                        zip_file.writestr(f"{prefix}_{i+1:02d}.html", html_content)
                     
                 else:
                     # Save matplotlib figure as PNG
@@ -956,6 +959,11 @@ def create_download_link(figures, prefix="figure"):
                 zip_file.writestr(f"{prefix}_{i+1:02d}_ERROR.txt", error_msg)
     
     buffer.seek(0)
+    
+    # Check if zip file is empty
+    if buffer.getbuffer().nbytes == 0:
+        st.error("No figures could be saved for download. Please check if any plots were generated.")
+        return None
     
     # Create download button
     b64 = base64.b64encode(buffer.read()).decode()
@@ -1364,6 +1372,10 @@ def main():
             with col1:
                 st.markdown("### Download All Figures")
                 download_link = create_download_link(figures, "scientific_analysis")
+                if download_link:
+                    st.markdown(download_link, unsafe_allow_html=True)
+                else:
+                    st.warning("Could not create download link. No valid figures to save.")
                 st.markdown(download_link, unsafe_allow_html=True)
             
             with col2:
@@ -1401,5 +1413,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
