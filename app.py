@@ -22,7 +22,7 @@ warnings.filterwarnings('ignore')
 
 # Set page configuration
 st.set_page_config(
-    page_title="Scientific Data Analyzer",
+    page_title="Min/Max Analyzer",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -950,7 +950,7 @@ def main():
     analyzer = ScientificDataAnalyzer()
     
     # Sidebar configuration
-    st.sidebar.title("🔬 Scientific Data Analyzer")
+    st.sidebar.title("🔬 Min/max Analyzer")
     st.sidebar.markdown("---")
     
     # Plot selection
@@ -992,7 +992,7 @@ def main():
     st.sidebar.markdown("---")
     
     # Main content
-    st.title("🔬 Scientific Data Analyzer")
+    st.title("🔬 Min/max Analyzer")
     st.markdown("Interactive statistical analysis and visualization tool for scientific research")
     
     # Instructions
@@ -1375,7 +1375,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #666;'>
-        <p>🔬 Scientific Data Analyzer v1.0 | Designed for scientific research publications</p>
+        <p>🔬 Min/max Analyzer | Designed for scientific research publications  | developed by @daM, https://chimicatechnoacta.ru </p>
         <p>All plots are optimized for scientific papers with white background and black borders</p>
         </div>
         """,
@@ -1384,3 +1384,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
