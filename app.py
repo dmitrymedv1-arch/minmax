@@ -926,17 +926,34 @@ def create_download_link(figures, prefix="figure"):
     buffer = BytesIO()
     with zipfile.ZipFile(buffer, 'w') as zip_file:
         for i, fig in enumerate(figures):
-            # Save to bytes
-            fig_buffer = BytesIO()
-            fig.savefig(fig_buffer, format='png', bbox_inches='tight', dpi=300)
-            fig_buffer.seek(0)
-            zip_file.writestr(f"{prefix}_{i+1:02d}.png", fig_buffer.read())
-            
-            # Also save as PDF
-            fig_buffer_pdf = BytesIO()
-            fig.savefig(fig_buffer_pdf, format='pdf', bbox_inches='tight')
-            fig_buffer_pdf.seek(0)
-            zip_file.writestr(f"{prefix}_{i+1:02d}.pdf", fig_buffer_pdf.read())
+            try:
+                # Check if it's a plotly figure
+                if hasattr(fig, 'to_image'):
+                    # Save plotly figure as PNG
+                    img_bytes = fig.to_image(format="png", width=1200, height=800)
+                    zip_file.writestr(f"{prefix}_{i+1:02d}.png", img_bytes)
+                    
+                    # For plotly, also save as HTML for interactivity
+                    html_content = fig.to_html(include_plotlyjs='cdn')
+                    zip_file.writestr(f"{prefix}_{i+1:02d}.html", html_content)
+                    
+                else:
+                    # Save matplotlib figure as PNG
+                    fig_buffer = BytesIO()
+                    fig.savefig(fig_buffer, format='png', bbox_inches='tight', dpi=300)
+                    fig_buffer.seek(0)
+                    zip_file.writestr(f"{prefix}_{i+1:02d}.png", fig_buffer.read())
+                    
+                    # Also save as PDF
+                    fig_buffer_pdf = BytesIO()
+                    fig.savefig(fig_buffer_pdf, format='pdf', bbox_inches='tight')
+                    fig_buffer_pdf.seek(0)
+                    zip_file.writestr(f"{prefix}_{i+1:02d}.pdf", fig_buffer_pdf.read())
+                    
+            except Exception as e:
+                # If saving fails, create a placeholder
+                error_msg = f"Error saving figure {i+1}: {str(e)}"
+                zip_file.writestr(f"{prefix}_{i+1:02d}_ERROR.txt", error_msg)
     
     buffer.seek(0)
     
@@ -1384,4 +1401,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
