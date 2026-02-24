@@ -31,24 +31,52 @@ st.set_page_config(
 # Apply scientific plotting style
 plt.style.use('default')
 plt.rcParams.update({
+    # Font sizes and weights
+    'font.size': 10,
     'font.family': 'serif',
-    'font.size': 12,
-    'axes.labelsize': 14,
-    'axes.titlesize': 16,
+    'axes.labelsize': 11,
+    'axes.labelweight': 'bold',
+    'axes.titlesize': 12,
+    'axes.titleweight': 'bold',
+    
+    # Axes appearance
     'axes.facecolor': 'white',
-    'figure.facecolor': 'white',
     'axes.edgecolor': 'black',
-    'axes.linewidth': 1.5,
+    'axes.linewidth': 1.0,
+    'axes.grid': False,
+    
+    # Tick parameters
     'xtick.color': 'black',
     'ytick.color': 'black',
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
     'xtick.direction': 'out',
     'ytick.direction': 'out',
-    'grid.linewidth': 0,
-    'legend.frameon': False,
+    'xtick.major.size': 4,
+    'xtick.minor.size': 2,
+    'ytick.major.size': 4,
+    'ytick.minor.size': 2,
+    'xtick.major.width': 0.8,
+    'ytick.major.width': 0.8,
+    
+    # Legend
+    'legend.fontsize': 10,
+    'legend.frameon': True,
+    'legend.framealpha': 0.9,
+    'legend.edgecolor': 'black',
+    'legend.fancybox': False,
+    
+    # Figure
+    'figure.dpi': 600,
+    'savefig.dpi': 600,
     'savefig.bbox': 'tight',
     'savefig.pad_inches': 0.1,
-    'figure.dpi': 300,
-    'savefig.dpi': 300,
+    'figure.facecolor': 'white',
+    
+    # Lines
+    'lines.linewidth': 1.5,
+    'lines.markersize': 6,
+    'errorbar.capsize': 3,
 })
 
 class ScientificDataAnalyzer:
@@ -125,16 +153,16 @@ class ScientificDataAnalyzer:
             stats_dict['mode_freq'] = 0
             
         return stats_dict
-    
+
     def create_histogram_comparison(self, data_sets, set_names, set_colors):
         """Create comparative histogram"""
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(8, 6))  # Уменьшен размер для научной публикации
         
         valid_sets = [(name, data) for name, data in data_sets.items() if len(data) > 0]
         
         if not valid_sets:
             ax.text(0.5, 0.5, 'No data available for plotting', 
-                   ha='center', va='center', transform=ax.transAxes, fontsize=14)
+                   ha='center', va='center', transform=ax.transAxes, fontsize=10)
             return fig
         
         bins = 30
@@ -142,26 +170,31 @@ class ScientificDataAnalyzer:
         for idx, (name, data) in enumerate(valid_sets):
             color = set_colors.get(name, self.default_colors[idx % len(self.default_colors)])
             ax.hist(data, bins=bins, alpha=0.6, label=set_names.get(name, name), 
-                   color=color, edgecolor='black', linewidth=0.5)
+                   color=color, edgecolor='black', linewidth=0.8)  # Увеличена толщина границ
         
-        ax.set_xlabel('Values', fontsize=14)
-        ax.set_ylabel('Frequency', fontsize=14)
-        ax.set_title('Comparative Histogram of All Datasets', fontsize=16, pad=20)
-        ax.legend(loc='best', fontsize=12)
+        ax.set_xlabel('Values', fontsize=11, fontweight='bold')
+        ax.set_ylabel('Frequency', fontsize=11, fontweight='bold')
+        ax.set_title('Comparative Histogram', fontsize=12, fontweight='bold', pad=10)
+        ax.legend(loc='best', fontsize=10, frameon=True, edgecolor='black')
         ax.set_axisbelow(True)
-        ax.grid(True, alpha=0.1, linestyle='--', linewidth=0.5)
+        ax.grid(True, alpha=0.2, linestyle=':', linewidth=0.5)  # Изменен стиль сетки
+        
+        # Добавлены minor ticks
+        ax.minorticks_on()
+        ax.tick_params(which='both', direction='out', length=4, width=0.8)
+        ax.tick_params(which='minor', length=2)
         
         return fig
-    
+
     def create_normalized_histogram(self, data_sets, set_names, set_colors):
         """Create normalized histograms (PDF)"""
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(8, 6))
         
         valid_sets = [(name, data) for name, data in data_sets.items() if len(data) > 0]
         
         if not valid_sets:
             ax.text(0.5, 0.5, 'No data available for plotting', 
-                   ha='center', va='center', transform=ax.transAxes, fontsize=14)
+                   ha='center', va='center', transform=ax.transAxes, fontsize=10)
             return fig
         
         for idx, (name, data) in enumerate(valid_sets):
@@ -174,56 +207,69 @@ class ScientificDataAnalyzer:
                     xmin, xmax = data.min(), data.max()
                     x_range = xmax - xmin
                     x = np.linspace(xmin - 0.1*x_range, xmax + 0.1*x_range, 400)
-                    ax.plot(x, kde(x), color=color, linewidth=2.5, 
-                           label=f'{set_names.get(name, name)} KDE')
+                    ax.plot(x, kde(x), color=color, linewidth=2.0,  # Уменьшена толщина
+                           label=f'{set_names.get(name, name)}')
                 except:
                     pass
             
             # Normalized histogram
-            ax.hist(data, bins=30, density=True, alpha=0.25, 
-                   color=color, edgecolor='black', linewidth=0.5)
+            ax.hist(data, bins=30, density=True, alpha=0.3, 
+                   color=color, edgecolor='black', linewidth=0.8)
         
-        ax.set_xlabel('Values', fontsize=14)
-        ax.set_ylabel('Probability Density', fontsize=14)
-        ax.set_title('Normalized Histograms with Kernel Density Estimates', fontsize=16, pad=20)
-        ax.legend(loc='best', fontsize=12)
+        ax.set_xlabel('Values', fontsize=11, fontweight='bold')
+        ax.set_ylabel('Probability Density', fontsize=11, fontweight='bold')
+        ax.set_title('Normalized Histograms', fontsize=12, fontweight='bold', pad=10)
+        ax.legend(loc='best', fontsize=9, frameon=True, edgecolor='black')
         ax.set_axisbelow(True)
-        ax.grid(True, alpha=0.1, linestyle='--', linewidth=0.5)
+        ax.grid(True, alpha=0.2, linestyle=':', linewidth=0.5)
+        
+        # Minor ticks
+        ax.minorticks_on()
+        ax.tick_params(which='both', direction='out', length=4, width=0.8)
+        ax.tick_params(which='minor', length=2)
         
         return fig
-    
+
     def create_box_plot(self, data_sets, set_names, set_colors):
         """Create box plots"""
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(8, 6))
         
         valid_sets = [(name, data) for name, data in data_sets.items() if len(data) > 0]
         
         if not valid_sets:
             ax.text(0.5, 0.5, 'No data available for plotting', 
-                   ha='center', va='center', transform=ax.transAxes, fontsize=14)
+                   ha='center', va='center', transform=ax.transAxes, fontsize=10)
             return fig
         
         data_to_plot = [data for _, data in valid_sets]
         labels = [set_names.get(name, name) for name, _ in valid_sets]
         
         box = ax.boxplot(data_to_plot, labels=labels, patch_artist=True, 
-                        medianprops={'color': 'black', 'linewidth': 2},
-                        whiskerprops={'linewidth': 1.5},
-                        capprops={'linewidth': 1.5})
+                        medianprops={'color': 'black', 'linewidth': 1.5},  # Уменьшена толщина
+                        whiskerprops={'linewidth': 1.0, 'color': 'black'},
+                        capprops={'linewidth': 1.0, 'color': 'black'},
+                        boxprops={'linewidth': 1.0},
+                        flierprops={'marker': 'o', 'markersize': 4, 'markerfacecolor': 'gray'})
         
         # Different colors for each box
         for idx, patch in enumerate(box['boxes']):
             name, _ = valid_sets[idx]
             color = set_colors.get(name, self.default_colors[idx % len(self.default_colors)])
             patch.set_facecolor(color)
-            patch.set_alpha(0.7)
+            patch.set_alpha(0.6)
             patch.set_edgecolor('black')
+            patch.set_linewidth(1.0)
         
-        ax.set_ylabel('Values', fontsize=14)
-        ax.set_title('Box Plot Comparison of Datasets', fontsize=16, pad=20)
-        plt.xticks(rotation=45, ha='right')
+        ax.set_ylabel('Values', fontsize=11, fontweight='bold')
+        ax.set_title('Box Plot Comparison', fontsize=12, fontweight='bold', pad=10)
+        plt.xticks(rotation=45, ha='right', fontsize=10)
         ax.set_axisbelow(True)
-        ax.grid(True, alpha=0.1, linestyle='--', linewidth=0.5, axis='y')
+        ax.grid(True, alpha=0.2, linestyle=':', linewidth=0.5, axis='y')
+        
+        # Minor ticks
+        ax.minorticks_on()
+        ax.tick_params(which='both', direction='out', length=4, width=0.8)
+        ax.tick_params(which='minor', length=2)
         
         return fig
     
@@ -1413,6 +1459,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
